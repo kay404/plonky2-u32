@@ -14,6 +14,7 @@ use plonky2::iop::generator::{GeneratedValues, SimpleGenerator, WitnessGenerator
 use plonky2::iop::target::Target;
 use plonky2::iop::witness::{PartitionWitness, Witness, WitnessWrite};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
+use plonky2::plonk::circuit_data::CommonCircuitData;
 use plonky2::plonk::plonk_common::{reduce_with_powers, reduce_with_powers_ext_circuit};
 use plonky2::plonk::vars::{EvaluationTargets, EvaluationVars, EvaluationVarsBase};
 use plonky2::util::ceil_div_usize;
@@ -55,11 +56,11 @@ impl<F: RichField + Extendable<D>, const D: usize> Gate<F, D> for U32RangeCheckG
         format!("{self:?}")
     }
 
-    fn serialize(&self, dst: &mut Vec<u8>) -> IoResult<()> {
+    fn serialize(&self, dst: &mut Vec<u8>, _common_data: &CommonCircuitData<F, D>) -> IoResult<()> {
         dst.write_usize(self.num_input_limbs)
     }
 
-    fn deserialize(src: &mut Buffer) -> IoResult<Self> {
+    fn deserialize(src: &mut Buffer, _common_data: &CommonCircuitData<F, D>) -> IoResult<Self> {
         let num_input_limbs = src.read_usize()?;
         Ok(Self { num_input_limbs, _phantom: PhantomData })
     }
@@ -147,7 +148,7 @@ impl<F: RichField + Extendable<D>, const D: usize> Gate<F, D> for U32RangeCheckG
         constraints
     }
 
-    fn generators(&self, row: usize, _local_constants: &[F]) -> Vec<WitnessGeneratorRef<F>> {
+    fn generators(&self, row: usize, _local_constants: &[F]) -> Vec<WitnessGeneratorRef<F, D>> {
         let gen = U32RangeCheckGenerator { gate: *self, row };
         vec![WitnessGeneratorRef::new(gen.adapter())]
     }
@@ -177,7 +178,7 @@ pub struct U32RangeCheckGenerator<F: RichField + Extendable<D>, const D: usize> 
     row: usize,
 }
 
-impl<F: RichField + Extendable<D>, const D: usize> SimpleGenerator<F>
+impl<F: RichField + Extendable<D>, const D: usize> SimpleGenerator<F, D>
     for U32RangeCheckGenerator<F, D>
 {
     fn id(&self) -> String {
@@ -215,13 +216,13 @@ impl<F: RichField + Extendable<D>, const D: usize> SimpleGenerator<F>
         }
     }
 
-    fn serialize(&self, dst: &mut Vec<u8>) -> IoResult<()> {
-        self.gate.serialize(dst)?;
+    fn serialize(&self, dst: &mut Vec<u8>, common_data: &CommonCircuitData<F, D>) -> IoResult<()> {
+        self.gate.serialize(dst, common_data)?;
         dst.write_usize(self.row)
     }
 
-    fn deserialize(src: &mut Buffer) -> IoResult<Self> {
-        let gate = U32RangeCheckGate::deserialize(src)?;
+    fn deserialize(src: &mut Buffer, common_data: &CommonCircuitData<F, D>) -> IoResult<Self> {
+        let gate = U32RangeCheckGate::deserialize(src, common_data)?;
         let row = src.read_usize()?;
         Ok(Self { row, gate })
     }

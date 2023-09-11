@@ -10,6 +10,7 @@ use plonky2::iop::generator::{GeneratedValues, SimpleGenerator};
 use plonky2::iop::target::Target;
 use plonky2::iop::witness::{PartitionWitness, Witness};
 use plonky2::plonk::circuit_builder::CircuitBuilder;
+use plonky2::plonk::circuit_data::CommonCircuitData;
 
 use crate::gates::add_many_u32::U32AddManyGate;
 use crate::gates::arithmetic_u32::U32ArithmeticGate;
@@ -241,20 +242,20 @@ struct SplitToU32Generator<F: RichField + Extendable<D>, const D: usize> {
     _phantom: PhantomData<F>,
 }
 
-impl<F: RichField + Extendable<D>, const D: usize> SimpleGenerator<F>
+impl<F: RichField + Extendable<D>, const D: usize> SimpleGenerator<F, D>
     for SplitToU32Generator<F, D>
 {
     fn id(&self) -> String {
         "SplitToU32Generator".to_string()
     }
 
-    fn serialize(&self, dst: &mut Vec<u8>) -> IoResult<()> {
+    fn serialize(&self, dst: &mut Vec<u8>, _common_data: &CommonCircuitData<F, D>) -> IoResult<()> {
         dst.write_target(self.x)?;
         dst.write_target_u32(self.low)?;
         dst.write_target_u32(self.high)
     }
 
-    fn deserialize(src: &mut Buffer) -> IoResult<Self> {
+    fn deserialize(src: &mut Buffer<'_>, _common_data: &CommonCircuitData<F, D>) -> IoResult<Self> {
         let x = src.read_target()?;
         let low = src.read_target_u32()?;
         let high = src.read_target_u32()?;
