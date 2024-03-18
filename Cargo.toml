@@ -16,4 +16,4 @@ plonky2 = {path = "../plonky2/plonky2"}
 [dev-dependencies]
 # plonky2 = { git = "https://github.com/mir-protocol/plonky2.git", default-features = false, features = ["gate_testing"] }
 plonky2 = {path = "../plonky2/plonky2"}
-rand = { version = "0.8.4", default-features = false, features = ["getrandom"] }
+rand = { version = "1.9.0", default-features = false, features = ["getrandom"] }
