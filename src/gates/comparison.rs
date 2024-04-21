@@ -23,7 +23,7 @@ use plonky2::plonk::vars::{
     EvaluationTargets, EvaluationVars, EvaluationVarsBase, EvaluationVarsBaseBatch,
     EvaluationVarsBasePacked,
 };
-use plonky2::util::{bits_u64, ceil_div_usize};
+use plonky2::util::bits_u64;
 
 /// A gate for checking that one value is less than or equal to another.
 #[derive(Clone, Debug)]
@@ -44,7 +44,8 @@ impl<F: RichField + Extendable<D>, const D: usize> ComparisonGate<F, D> {
     }
 
     pub fn chunk_bits(&self) -> usize {
-        ceil_div_usize(self.num_bits, self.num_chunks)
+        // ceil_div_usize(self.num_bits, self.num_chunks)
+        self.num_bits.div_ceil(self.num_chunks)
     }
 
     pub fn wire_first_input(&self) -> usize {
@@ -707,7 +708,7 @@ mod tests {
         };
         let less_than_vars = EvaluationVars {
             local_constants: &[],
-            local_wires: &get_wires(first_input, second_input),
+            local_wires: get_wires(first_input, second_input).as_ref(),
             public_inputs_hash: &HashOut::rand(),
         };
         assert!(
@@ -725,7 +726,7 @@ mod tests {
         };
         let equal_vars = EvaluationVars {
             local_constants: &[],
-            local_wires: &get_wires(first_input, first_input),
+            local_wires: get_wires(first_input, first_input).as_ref(),
             public_inputs_hash: &HashOut::rand(),
         };
         assert!(

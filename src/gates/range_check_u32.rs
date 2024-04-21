@@ -17,7 +17,7 @@ use plonky2::plonk::circuit_builder::CircuitBuilder;
 use plonky2::plonk::circuit_data::CommonCircuitData;
 use plonky2::plonk::plonk_common::{reduce_with_powers, reduce_with_powers_ext_circuit};
 use plonky2::plonk::vars::{EvaluationTargets, EvaluationVars, EvaluationVarsBase};
-use plonky2::util::ceil_div_usize;
+// use plonky2::util::ceil_div_usize;
 
 /// A gate which can decompose a number into base B little-endian limbs.
 #[derive(Copy, Clone, Debug)]
@@ -38,7 +38,8 @@ impl<F: RichField + Extendable<D>, const D: usize> U32RangeCheckGate<F, D> {
     pub const BASE: usize = 1 << Self::AUX_LIMB_BITS;
 
     fn aux_limbs_per_input_limb(&self) -> usize {
-        ceil_div_usize(32, Self::AUX_LIMB_BITS)
+        // ceil_div_usize(32, Self::AUX_LIMB_BITS)
+        32usize.div_ceil(Self::AUX_LIMB_BITS)
     }
     pub fn wire_ith_input_limb(&self, i: usize) -> usize {
         debug_assert!(i < self.num_input_limbs);
@@ -304,7 +305,7 @@ mod tests {
 
         let vars = EvaluationVars {
             local_constants: &[],
-            local_wires: &get_wires(input_limbs),
+            local_wires: get_wires(input_limbs).as_ref(),
             public_inputs_hash: &HashOut::rand(),
         };
 
